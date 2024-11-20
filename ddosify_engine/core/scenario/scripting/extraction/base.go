@@ -52,6 +52,24 @@ func Extract(source interface{}, ce types.EnvCaptureConf) (val interface{}, err 
 		} else if ce.XpathHtml != nil {
 			val, err = ExtractFromHtml(source, *ce.XpathHtml)
 		}
+	case types.Extracted:
+		extractedVars := source.(map[string]interface{})
+		if ce.ExtVar != nil {
+			c, ok := extractedVars[*ce.ExtVar]
+			if !ok {
+				err = fmt.Errorf("extracted var %s not found", *ce.ExtVar)
+			} else if ce.JsonPath != nil {
+				val, err = ExtractFromJson(c, *ce.JsonPath)
+			} else if ce.RegExp != nil {
+				val, err = ExtractWithRegex(c, *ce.RegExp)
+			} else if ce.Xpath != nil {
+				val, err = ExtractFromXml(c, *ce.Xpath)
+			} else if ce.XpathHtml != nil {
+				val, err = ExtractFromHtml(c, *ce.XpathHtml)
+			}
+		} else {
+			err = fmt.Errorf("ext_var not specified")
+		}
 	case types.Cookie:
 		cookies := source.(map[string]*http.Cookie)
 		if ce.CookieName != nil { // cookie name specified

@@ -241,6 +241,7 @@ const (
 	Header SourceType = "header"
 	Body   SourceType = "body"
 	Cookie SourceType = "cookies"
+	Extracted SourceType = "extracted"
 )
 
 type RegexCaptureConf struct {
@@ -257,6 +258,7 @@ type EnvCaptureConf struct {
 	From       SourceType        `json:"from"`
 	Key        *string           `json:"header_key"`
 	CookieName *string           `json:"cookie_name"`
+	ExtVar     *string           `json:"ext_var"`
 }
 
 type CsvData struct {
@@ -328,7 +330,7 @@ func wrapAsScenarioValidationError(err error) ScenarioValidationError {
 }
 
 func validateCaptureConf(conf EnvCaptureConf) error {
-	if !(conf.From == Header || conf.From == Body || conf.From == Cookie) {
+	if !(conf.From == Header || conf.From == Body || conf.From == Cookie || conf.From == Extracted) {
 		return CaptureConfigError{
 			msg: fmt.Sprintf("invalid \"from\" type in capture env : %s", conf.From),
 		}
@@ -337,6 +339,12 @@ func validateCaptureConf(conf EnvCaptureConf) error {
 	if conf.From == Header && conf.Key == nil {
 		return CaptureConfigError{
 			msg: fmt.Sprintf("%s, header key must be specified", conf.Name),
+		}
+	}
+
+	if conf.From == Extracted && conf.ExtVar == nil {
+		return CaptureConfigError{
+			msg: fmt.Sprintf("%s, ext_var must be specified", conf.Name),
 		}
 	}
 

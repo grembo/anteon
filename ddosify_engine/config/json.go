@@ -68,13 +68,15 @@ type RegexCaptureConf struct {
 	No  int     `json:"matchNo"`
 }
 type capturePath struct {
+	Name       *string           `json:"name"`
 	JsonPath   *string           `json:"json_path"`
 	XPath      *string           `json:"xpath"`
 	XpathHtml  *string           `json:"xpath_html"`
 	RegExp     *RegexCaptureConf `json:"regexp"`
-	From       string            `json:"from"` // body,header,cookie
+	From       string            `json:"from"` // body,header,cookie,extracted
 	CookieName *string           `json:"cookie_name"`
 	HeaderKey  *string           `json:"header_key"` // header key
+	ExtVar     *string           `json:"ext_var"`
 }
 
 type step struct {
@@ -92,7 +94,7 @@ type step struct {
 	Others           map[string]interface{} `json:"others"`
 	CertPath         string                 `json:"cert_path"`
 	CertKeyPath      string                 `json:"cert_key_path"`
-	CaptureEnv       map[string]capturePath `json:"capture_env"`
+	CaptureEnv       []capturePath          `json:"capture_env"`
 	Assertions       []string               `json:"assertion"`
 }
 
@@ -372,15 +374,16 @@ func stepToScenarioStep(s step) (types.ScenarioStep, error) {
 	}
 
 	var capturedEnvs []types.EnvCaptureConf
-	for name, path := range s.CaptureEnv {
+	for _, path := range s.CaptureEnv {
 		capConf := types.EnvCaptureConf{
 			JsonPath:   path.JsonPath,
 			Xpath:      path.XPath,
 			XpathHtml:  path.XpathHtml,
-			Name:       name,
+			Name:       *path.Name,
 			From:       types.SourceType(path.From),
 			Key:        path.HeaderKey,
 			CookieName: path.CookieName,
+			ExtVar:     path.ExtVar,
 		}
 
 		if path.RegExp != nil {

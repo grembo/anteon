@@ -797,6 +797,8 @@ func (h *HttpRequester) captureEnvironmentVariables(header http.Header, respBody
 			val, err = extraction.Extract(respBody, ce)
 		case types.Cookie:
 			val, err = extraction.Extract(cookies, ce)
+		case types.Extracted:
+			val, err = extraction.Extract(extractedVars, ce)
 		}
 		if err != nil && errors.As(err, &captureError) {
 			// do not terminate in case of a capture error, continue capturing
